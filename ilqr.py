@@ -24,7 +24,9 @@ def simulate_dynamics_next(env, x, u):
     -------
     next_x: np.array
     """
-    return np.zeros(x.shape)
+    env.state(x)
+    next_x,_,_,_ = env.step(u)
+    return next_x
 
 
 def cost_inter(env, x, u):
@@ -48,7 +50,13 @@ def cost_inter(env, x, u):
     corresponding variables, ex: (1) l_x is the first order derivative d l/d x (2) l_xx is the second order derivative
     d^2 l/d x^2
     """
-    return None
+    l = np.dot(u,u)
+    l_x = np.zeros_like(x)
+    l_xx = np.zeros(x.shape[0],x.shape[0])
+    l_u = u
+    l_uu = np.eye(u.shape[0])
+    l_ux = np.zeros(u.shape[0],x.shape[0])
+    return l,l_x,l_xx,l_u,l_uu,l_ux
 
 
 def cost_final(env, x):
@@ -68,6 +76,8 @@ def cost_final(env, x):
     l, l_x, l_xx The first term is the loss, where the remaining terms are derivatives respect to the
     corresponding variables
     """
+    l = 10000*np.square(np.linalg.norm(x-env.goal,2))
+
     return None
 
 
