@@ -75,7 +75,7 @@ def approximate_A(env, x, u, delta=1e-5, dt=1e-5):
       delta_x_dot = x_pert_dot-x_dot
       for i in range(x.shape[0]):
         A[i,j] = delta_x_dot[i]/delta
-
+    #A = A+np.eye(A.shape[0])*1e-5
     return A.copy()
 
 

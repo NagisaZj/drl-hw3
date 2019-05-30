@@ -1,6 +1,6 @@
 """LQR, iLQR and MPC."""
 
-from deeprl_hw3.controllers import approximate_A, approximate_B
+#from controllers import approximate_A, approximate_B
 import numpy as np
 import scipy.linalg
 
@@ -24,9 +24,9 @@ def simulate_dynamics_next(env, x, u):
     -------
     next_x: np.array
     """
-    env.state(x)
+    env.state = x.copy()
     next_x,_,_,_ = env.step(u)
-    return next_x
+    return next_x.copy()
 
 
 def cost_inter(env, x, u):
@@ -56,7 +56,7 @@ def cost_inter(env, x, u):
     l_u = u
     l_uu = np.eye(u.shape[0])
     l_ux = np.zeros(u.shape[0],x.shape[0])
-    return l,l_x,l_xx,l_u,l_uu,l_ux
+    return l,l_x.copy(),l_xx.copy(),l_u.copy(),l_uu.copy(),l_ux.copy()
 
 
 def cost_final(env, x):
@@ -77,9 +77,28 @@ def cost_final(env, x):
     corresponding variables
     """
     l = 10000*np.square(np.linalg.norm(x-env.goal,2))
+    l_x = 20000*(x-env.goal)
+    l_xx = 20000*np.eye(x.shape[0])
+    return l,l_x.copy(),l_xx.copy()
 
-    return None
 
+def approximate_F(env,x,u,delta = 1e-5):
+    """
+    x_t+1 = F(x_t,u_t)^T
+    return F
+    """
+    env.state = x
+    con = np.hstack([x,u])
+    x_next = simulate_dynamics_next(env,x,u)
+    F = np.zeros(x.shape[0],con.shape[0])
+    for j in range(con.shape[0]):
+      con_pert = con.copy()
+      con_pert[j] += delta
+      x_next_pert = simulate_dynamics_next(env,con_pert[:x.shape[0]],con_pert[x.shape[0]:])
+      x_next_delta = x_next_pert-x_next
+      for i in range(x.shape[0]):
+        F[i,j] = x_next_delta[i]/delta
+    return F.copy()
 
 def simulate(env, x0, U):
     return None
