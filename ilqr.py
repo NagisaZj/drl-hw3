@@ -125,4 +125,40 @@ def calc_ilqr_input(env, sim_env, tN=50, max_iter=1e6):
     U: np.array
       The SEQUENCE of commands to execute. The size should be (tN, #parameters)
     """
+    x_0 = env.state
+    adim = env.action_space.shape[0]
+    xdim = x_0.shape[0]
+    x_hat = np.zeors([tN,x_dim])
+    u_hat = np.zeros([tN,adim])
+    K_t = np.zeros([tN,adim,x_dim])
+    k_t = np.zeros([tN,adim])
+    # Q_t = np.zeros([tN,x_dim+adim,x_dim+adim])
+    # q_t = np.zeros([tN,x_dim+adim])
+    V_t = np.zeros([tN+1,x_dim,x_dim])
+    v_t = np.zeros([tN+1,x_dim])
+    for i in range(max_iter):
+      #backward
+      for t in reversed(range(tN)):
+        F_t = approximate_F(sim_env,x_hat[t],u_hat[t])
+        if t == tN-1:#final
+          l,l_x,l_xx = cost_final(sim_env,x_hat[t])
+          c_t = np.hstack([l_x,np.zeros([adim,])])
+          C_t = np.concatenate([l_xx,np.zeros([x_dim,adim])],axis=1)
+          C_t = np.concatenate([C_t,np.zeros([adim,x_dim+adim])],axis = 0)
+        else:
+          l,l_x,l_xx,l_u,l_uu,l_ux = cost_inter(sim_env,x_hat[t],u_hat[t])
+          c_t = np.hstack([l_x,l_u])
+          C_t = np.concatenate([l_xx,np.transpose(l_ux)],axis = 1)
+          temp = np.concatenate([l_ux,l_uu],axis = 1)
+          C_t = np.concatenate([C_t,temp],axis = 0)
+        Q_t = C_t+np.matmul(np.matmul(np.transpose(F_t),V_t[t+1]),F_t)
+        q_t = c_t+np.matmul(np.matmul(np.transpose(F_t),v_t[t+1]))
+        K_t = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),Q_t[xdim:,:xdim])
+        k_t = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),q_t[xdim:])
+        V_t[t] = Q_t[:xdim,:xdim]+np.matmul(Q_t[:xdim,xdim:],K_t)+
+                np.matmul(np.transpose(K_t),Q_t[xdim:,:xdim])+
+                np.matmul(np.matmul(np.transpose(K_t),Q_t[xdim:,xdim:]),K_t)
+        v_t[t] = q_t[:xdim]+np.matmul(Q_t[:xdim,xdim:],k_t)+np.matmul(np.transpose(K_t),q[xdim:])
+                  +np.matmul(np.matmul(np.transpose(K_t),Q_t[xdim:,xdim:]),k_t)
+
     return np.zeros((50, 2))
