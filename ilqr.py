@@ -87,7 +87,7 @@ def approximate_F(env,x,u,delta = 1e-5):
     x_t+1 = F(x_t,u_t)^T
     return F
     """
-    env.state = x
+    #env.state = x.copy()
     con = np.hstack([x,u])
     x_next = simulate_dynamics_next(env,x,u)
     F = np.zeros(x.shape[0],con.shape[0])
@@ -125,10 +125,12 @@ def calc_ilqr_input(env, sim_env, tN=50, max_iter=1e6):
     U: np.array
       The SEQUENCE of commands to execute. The size should be (tN, #parameters)
     """
-    x_0 = env.state
+    x_0 = env.state.copy()
     adim = env.action_space.shape[0]
     xdim = x_0.shape[0]
-    x_hat = np.zeors([tN,x_dim])
+    x_hat = np.zeros([tN,x_dim])
+    for i in range(tN):
+      x_hat[i]=x_0.copy()
     u_hat = np.zeros([tN,adim])
     K_t = np.zeros([tN,adim,x_dim])
     k_t = np.zeros([tN,adim])
@@ -153,12 +155,22 @@ def calc_ilqr_input(env, sim_env, tN=50, max_iter=1e6):
           C_t = np.concatenate([C_t,temp],axis = 0)
         Q_t = C_t+np.matmul(np.matmul(np.transpose(F_t),V_t[t+1]),F_t)
         q_t = c_t+np.matmul(np.matmul(np.transpose(F_t),v_t[t+1]))
-        K_t = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),Q_t[xdim:,:xdim])
-        k_t = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),q_t[xdim:])
-        V_t[t] = Q_t[:xdim,:xdim]+np.matmul(Q_t[:xdim,xdim:],K_t)+
-                np.matmul(np.transpose(K_t),Q_t[xdim:,:xdim])+
-                np.matmul(np.matmul(np.transpose(K_t),Q_t[xdim:,xdim:]),K_t)
-        v_t[t] = q_t[:xdim]+np.matmul(Q_t[:xdim,xdim:],k_t)+np.matmul(np.transpose(K_t),q[xdim:])
-                  +np.matmul(np.matmul(np.transpose(K_t),Q_t[xdim:,xdim:]),k_t)
+        K_t[t] = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),Q_t[xdim:,:xdim])
+        k_t[t] = -np.matmul(np.linalg.inv(Q_t[xdim:,xdim:]),q_t[xdim:])
+        V_t[t] = Q_t[:xdim,:xdim]+np.matmul(Q_t[:xdim,xdim:],K_t[t])+
+                 np.matmul(np.transpose(K_t[t]),Q_t[xdim:,:xdim])+
+                 np.matmul(np.matmul(np.transpose(K_t[t]),Q_t[xdim:,xdim:]),K_t[t])
+        v_t[t] = q_t[:xdim]+np.matmul(Q_t[:xdim,xdim:],k_t[t])+np.matmul(np.transpose(K_t[t]),q[xdim:])
+                 +np.matmul(np.matmul(np.transpose(K_t[t]),Q_t[xdim:,xdim:]),k_t[t])
+      
+      #forward
+      sim_env.state = x_0.copy()
+      x = x_0.copy()
+      for t in range(tN):
+        delta_x = x-x_hat[t]
+        x_hat[t] = x.copy()
+        u_hat[t] = np.matmul(K_t[t],delta_x)+k_t[t]+u_hat[t]
+        x,_,_,_ = sim_env.step(u_hat[t])
+        
 
-    return np.zeros((50, 2))
+    return u_hat.copy()
