@@ -27,7 +27,7 @@ def main():
     RL = Reinforce(
         n_actions=env.action_space.n,
         n_features=env.observation_space.shape[0],
-        learning_rate=0.01,
+        learning_rate=0.02,
         reward_decay=0.99,
         # output_graph=True,
     )
