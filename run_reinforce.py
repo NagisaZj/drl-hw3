@@ -10,8 +10,9 @@ import os
 
 def main():
     log_path = './reinforce_data/'
-    test_interval = 5
+    test_interval = 10
     RENDER = False
+    max_episodes = 200
     test_loss_mean = []
     test_loss_min = []
     test_loss_max = []
@@ -26,20 +27,22 @@ def main():
     RL = Reinforce(
         n_actions=env.action_space.n,
         n_features=env.observation_space.shape[0],
-        learning_rate=0.02,
+        learning_rate=0.01,
         reward_decay=0.99,
         # output_graph=True,
     )
 
     for i_episode in range(3000):
         observation = env.reset()
+        cnt = 0
         while True:
             if RENDER: env.render()
             action = RL.choose_action(observation)
             observation_, reward, done, info = env.step(action)
+            cnt = cnt + 1
             #print(action,reward)
             RL.store_transition(observation, action, reward)
-            if done:
+            if done or cnt == max_episodes:
                 ep_rs_sum = sum(RL.ep_rs)
                 #if running_reward > DISPLAY_REWARD_THRESHOLD: RENDER = True  # rendering
                 print("episode:", i_episode, "  reward:", ep_rs_sum)
@@ -49,12 +52,14 @@ def main():
                     for _ in range(100):
                         reward_total = 0
                         observation = env.reset()
+                        cnt = 0
                         while True:
                             action = RL.choose_action(observation)
                             observation_, reward, done, info = env.step(action)
+                            cnt = cnt + 1
                             reward_total = reward_total + reward
                             observation = observation_
-                            if done:
+                            if done or cnt == max_episodes:
                                 test_loss.append(reward_total)
                                 break
                     test_loss = np.array(test_loss,dtype = np.float32)
