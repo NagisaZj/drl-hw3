@@ -1,0 +1,15 @@
+TwoLinkArm-v0
+total reward: -586.3950734811056
+total steps: 114
+
+TwoLinkArm-limited-torque-v0(ill-conditioned)
+total reward: -8098.886906820016
+total steps: 2384
+
+TwoLinkArm-v1
+total reward: -3812.3094903971446
+total steps: 462
+
+TwoLinkArm-limited-torque-v1
+total reward: -3776.529313590416
+total steps: 1176
