@@ -3,7 +3,7 @@ import ilqr
 import numpy as np
 import matplotlib.pyplot as plt
 env_name = "TwoLinkArm-v0"
-tN = 100
+tN = 300
 
 env = gym.make(env_name)
 sim_env = gym.make(env_name)
