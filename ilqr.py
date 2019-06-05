@@ -3,7 +3,7 @@
 #from controllers import approximate_A, approximate_B
 import numpy as np
 import scipy.linalg
-
+import matplotlib.pyplot as plt
 
 def simulate_dynamics_next(env, x, u):
     """Step simulator to see how state changes.
@@ -148,6 +148,8 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
     # v_x = np.zeros([tN+1,xdim])
     # v_xx = np.zeros([tN+1,xdim,xdim])
     
+    total_cost = []
+    total_reward = []
 
     for i in range(int(max_iter)):
       print("iteration: %d"%(i+1))
@@ -238,6 +240,8 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
       tcost+=cost_final(sim_env,x)[0]
       print("total reward:",rtotal)
       print("total cost:",tcost)
+      total_cost.append(tcost)
+      total_reward.append(rtotal)
       if np.abs(u_hat-u_hat_old).max()<1e-4 :
         break
       
@@ -260,4 +264,11 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
       # print("total cost:",tcost)
       # if np.abs(u_hat-u_hat_old).max()<1e-4 :
       #   break
+    plt.figure()
+    plt.subplot(121)
+    plt.plot(total_cost)
+    plt.title("cost")
+    plt.subplot(122)
+    plt.plot(total_reward)
+    plt.title("reward")
     return u_hat.copy()

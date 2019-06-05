@@ -2,8 +2,8 @@ import gym
 import ilqr
 import numpy as np
 import matplotlib.pyplot as plt
-env_name = "TwoLinkArm-v0"
-tN = 300
+env_name = "TwoLinkArm-v1"
+tN = 100
 
 env = gym.make(env_name)
 sim_env = gym.make(env_name)
@@ -24,6 +24,7 @@ for i in range(len(u_t)):
 q = np.array(q)
 q_dot = np.array(q_dot)
 u_t = np.array(u_t)
+plt.figure()
 plt.subplot(421)
 plt.plot(q[:,0])
 plt.title("q[0]")
