@@ -2,7 +2,7 @@ import gym
 import controllers
 import numpy as np
 import matplotlib.pyplot as plt
-env_name = "TwoLinkArm-limited-torque-v0"
+env_name = "TwoLinkArm-v0"
 
 env = gym.make(env_name)
 sim_env = gym.make(env_name)
@@ -15,10 +15,11 @@ q_dot = []
 u_t = []
 u_limit = []
 step_num = 0
+tN = 100
 #env._step(np.random.uniform(-100.0,100.0,(2,)),0.001)
 # env.state = np.hstack([env.goal_q,env.goal_dq])
 # print (env.state)
-while not done:
+while not done and step_num<tN:
     env.render()
     q.append(env.position)
     q_dot.append(env.velocity)

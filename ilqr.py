@@ -131,11 +131,12 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
     xdim = x_0.shape[0]
     x_hat = np.zeros([tN+1,xdim])
     u_hat = np.zeros([tN,adim])
-    # u_hat = np.random.uniform(-500,500,[tN,adim])
-    # sim_env.state = x_0.copy()
-    # for i in range(tN):
-    #   x_hat[i] = sim_env.state.copy()
-    #   sim_env.step(u_hat[i])
+    # if init_u is not None:
+    #   u_hat = init_u.copy()
+    #   sim_env.state = x_0.copy()
+    #   for i in range(tN):
+    #     x_hat[i] = sim_env.state.copy()
+    #     sim_env.step(u_hat[i])
     
     
     K_t = np.zeros([tN,adim,xdim])
@@ -158,7 +159,7 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
       u_hat_old = u_hat.copy()
 
       #backward
-      _,v_t[-1],V_t[-1] = cost_final(sim_env,x_hat[-1])
+      _,v_t[-1],V_t[-1] = cost_final(sim_env,x_hat[-1],300.0)
       for t in reversed(range(tN)):
         F_t = approximate_F(sim_env,x_hat[t],u_hat[t])
         #print(F_t)
@@ -242,7 +243,7 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
       print("total cost:",tcost)
       total_cost.append(tcost)
       total_reward.append(rtotal)
-      if np.abs(u_hat-u_hat_old).max()<1e-4 :
+      if np.abs(u_hat-u_hat_old).max()<1e-3 :
         break
       
       # sim_env.state = x_0.copy()

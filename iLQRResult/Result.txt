@@ -1,0 +1,29 @@
+v1
+LQR 
+reward: -3581
+total step: 100
+
+
+iLQR
+Iterate step: 12
+reward: -1400
+cost: 134559
+total step: 100
+
+
+v0
+LQR
+reward: -587.16
+total step: 100
+
+iLQR
+itertate step: 12
+reward: -1395.3
+cost: 134560
+total step: 100
+
+300xfinal_cost,v0
+iLQR
+iterate step: 28
+reward: -680
+total step: 100
